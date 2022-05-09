@@ -119,17 +119,17 @@ void EntityManager::spawnNewEntity(ECS& ecs)
 #elif EM_IMPL == 3
 
 	// 33% chance to spawn either type
-	auto rand = randRange<uint8_t>(0, 3);
-	if (rand == 0)
+	auto random = rand() % 3;
+	if (random == 0)
 		spawnAdder(ecs, false);
-	else if (rand == 1)
+	else if (random == 1)
 		spawnMultiplier(ecs, false);
 	else
 		spawnSubtractor(ecs, false);
 
 #endif
 
-	std::cout << ecs.getNoOfEntities() << '\n';
+	//std::cout << ecs.getNoOfEntities() << '\n';
 }
 
 template <class T>
