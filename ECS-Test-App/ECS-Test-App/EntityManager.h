@@ -36,6 +36,8 @@ protected:
 	T randRange(T min, T max);
 
 	void spawnAdder(ECS& ecs, bool init);
+	void spawnMultiplier(ECS& ecs, bool init);
+	void spawnSubtractor(ECS& ecs, bool init);
 
 #if EM_IMPL >= 2
 

@@ -36,6 +36,38 @@ void EntityManager::spawnAdder(ECS& ecs, bool init)
 	ecs.getEntitysComponent<c::Adder>(id)->addition = randRange<uint>(minAdd, maxAdd);
 }
 
+void EntityManager::spawnMultiplier(ECS& ecs, bool init)
+{
+	constexpr float minMul = 0.9;
+	constexpr float maxMul = 1.3;
+
+	EntityID id = 0;
+	if (init)
+		id = ecs.init_CreateEntity<c::Health, c::Multiplier>();
+	else
+		id = ecs.createEntity<c::Health, c::Multiplier>();
+
+	// Init component values
+	ecs.getEntitysComponent<c::Health>(id)->health = 0;
+	ecs.getEntitysComponent<c::Multiplier>(id)->multiplication = randRange<float>(minMul, maxMul);
+}
+
+void EntityManager::spawnSubtractor(ECS& ecs, bool init)
+{
+	constexpr uint minSub = 1;
+	constexpr uint maxSub = 5;
+
+	EntityID id = 0;
+	if (init)
+		id = ecs.init_CreateEntity<c::Health, c::Subtractor>();
+	else
+		id = ecs.createEntity<c::Health, c::Subtractor>();
+
+	// Init component values
+	ecs.getEntitysComponent<c::Health>(id)->health = 0;
+	ecs.getEntitysComponent<c::Subtractor>(id)->subtraction = randRange<uint>(minSub, maxSub);
+}
+
 void EntityManager::addTimer()
 {
 	constexpr float minTime = 2.f;
@@ -48,18 +80,32 @@ void EntityManager::addTimer()
 
 void EntityManager::initSpawnEntities(ECS& ecs)
 {
-
+	auto spawnAdders = [&](int amount)
+	{
+		for (EntityID i = 0; i < amount; ++i)
+			spawnAdder(ecs, true);
+	};
 
 #if EM_IMPL < 3
 
-	// Spawn only regular adders
-	const EntityID entityCount = 50000;
-	for (EntityID i = 0; i < entityCount; ++i)
-	{
-		spawnAdder(ecs, true);
-	}
+	spawnAdders(50000);
 
 #elif EM_IMPL == 3
+
+	auto spawnMultipliers = [&](int amount)
+	{
+		for (EntityID i = 0; i < amount; ++i)
+			spawnMultiplier(ecs, true);	
+	};
+	auto spawnSubtractors = [&](int amount)
+	{
+		for (EntityID i = 0; i < amount; ++i)
+			spawnSubtractor(ecs, true);
+	};
+
+	spawnAdders(30000);
+	spawnMultipliers(5000);
+	spawnSubtractors(15000);
 
 #endif
 }
@@ -70,7 +116,20 @@ void EntityManager::spawnNewEntity(ECS& ecs)
 
 	spawnAdder(ecs, false);
 
+#elif EM_IMPL == 3
+
+	// 33% chance to spawn either type
+	auto rand = randRange<uint8_t>(0, 3);
+	if (rand == 0)
+		spawnAdder(ecs, false);
+	else if (rand == 1)
+		spawnMultiplier(ecs, false);
+	else
+		spawnSubtractor(ecs, false);
+
 #endif
+
+	std::cout << ecs.getNoOfEntities() << '\n';
 }
 
 template <class T>

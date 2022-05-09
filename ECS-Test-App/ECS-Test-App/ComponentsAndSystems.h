@@ -75,18 +75,30 @@ namespace eps
 		};
 		auto processMultiplier = [&](EntityID i)
 		{
-			// Get this entity's adder
+			// Get this entity's multiplier
 			auto multiplier = ecs.getEntitysComponent<c::Multiplier>(i);
 
 			// Assume every entity has health component as that is the intention
 			auto health = ecs.getEntitysComponent<c::Health>(i);
 
 			// Apply multiplication
-			health->health = 
+			health->health = uint((float)health->health * multiplier->multiplication);
+
+			postProcess(i, health);
+
 		};
 		auto processSubtractor = [&](EntityID i)
 		{
+			// Get this entity's subtractor
+			auto subtraction = ecs.getEntitysComponent<c::Subtractor>(i);
 
+			// Assume every entity has health component as that is the intention
+			auto health = ecs.getEntitysComponent<c::Health>(i);
+
+			// Apply subtractor
+			health->health -= subtraction->subtraction;
+
+			// No need to process since we just wrap round thus no dying on subtraction
 		};
 
 		auto adderMask = ecs.getCompMask<c::Health, c::Adder>();
@@ -116,12 +128,21 @@ namespace eps
 #elif IMPL == 3
 
 		// Requires slightly more complex info to loop but it is more efficient. 
-		auto processGroup = [&](ecs::EntityGroup* group)
+		auto processAdderGroup = [&](ecs::EntityGroup* group)
 		{
 			for (int i = group->startIndex; i <= group->getEndIndex(); i++)
 				processAdder(i);
 		};
-
+		auto processMultiplierGroup = [&](ecs::EntityGroup* group)
+		{
+			for (int i = group->startIndex; i <= group->getEndIndex(); i++)
+				processMultiplier(i);
+		};
+		auto processSubtractorGroup = [&](ecs::EntityGroup* group)
+		{
+			for (int i = group->startIndex; i <= group->getEndIndex(); i++)
+				processSubtractor(i);
+		};
 
 		// Get entity groups
 		auto &entityGroups = ecs.getEntityGroups();
@@ -130,8 +151,12 @@ namespace eps
 		for (auto *group : entityGroups)
 		{
 			// If this is a group with these components
-			if ((group->compMask & compMask) == compMask)
-				processGroup(group);
+			if ((group->compMask & adderMask) == adderMask)
+				processAdderGroup(group);
+			else if ((group->compMask & multiplerMask) == multiplerMask)
+				processMultiplierGroup(group);
+			else if ((group->compMask & subtractorMask) == subtractorMask)
+				processSubtractorGroup(group);
 		}
 
 #endif
