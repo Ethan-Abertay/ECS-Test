@@ -54,7 +54,7 @@ namespace eps
 			if (health->health >= 50)
 			{
 				ecs.destroyEntity(i);
-				entityManager->addTimer();
+				entityManager->addCounter();
 			}
 #endif
 		};
@@ -73,6 +73,7 @@ namespace eps
 
 			postProcess(i, health);
 		};
+#if EM_IMPL == 3
 		auto processMultiplier = [&](EntityID i)
 		{
 			// Get this entity's multiplier
@@ -100,10 +101,14 @@ namespace eps
 
 			// No need to process since we just wrap round thus no dying on subtraction
 		};
+#endif
 
 		auto adderMask = ecs.getCompMask<c::Health, c::Adder>();
+
+#if EM_IMPL == 3
 		auto multiplerMask = ecs.getCompMask<c::Health, c::Multiplier>();
 		auto subtractorMask = ecs.getCompMask<c::Health, c::Subtractor>();
+#endif
 
 #if IMPL == 1 || IMPL == 2
 
@@ -131,8 +136,25 @@ namespace eps
 		auto processAdderGroup = [&](ecs::EntityGroup* group)
 		{
 			for (int i = group->startIndex; i <= group->getEndIndex(); i++)
+			{
+				// Record previous count
+				auto previousCount = group->noOfEntities;
+
 				processAdder(i);
-		};
+
+				// Detect if entity was killed
+				if (previousCount != group->noOfEntities)
+				{
+					// Set new previous count
+					previousCount = group->noOfEntities;
+
+					// Update i for loop
+					i--;
+				}
+			}
+		}; 
+#if EM_IMPL == 3
+
 		auto processMultiplierGroup = [&](ecs::EntityGroup* group)
 		{
 			for (int i = group->startIndex; i <= group->getEndIndex(); i++)
@@ -144,6 +166,8 @@ namespace eps
 				processSubtractor(i);
 		};
 
+#endif
+
 		// Get entity groups
 		auto &entityGroups = ecs.getEntityGroups();
 
@@ -153,10 +177,12 @@ namespace eps
 			// If this is a group with these components
 			if ((group->compMask & adderMask) == adderMask)
 				processAdderGroup(group);
+#if EM_IMPL == 3
 			else if ((group->compMask & multiplerMask) == multiplerMask)
 				processMultiplierGroup(group);
 			else if ((group->compMask & subtractorMask) == subtractorMask)
 				processSubtractorGroup(group);
+#endif
 		}
 
 #endif

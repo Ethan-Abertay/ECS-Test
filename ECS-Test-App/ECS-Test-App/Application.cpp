@@ -47,7 +47,6 @@ Application::~Application()
 void Application::run()
 {
 	// Length of time to run test in seconds
-	float testTime = 15;
 	unsigned int loops = 1000;
 
 	bool bRunning = true;
@@ -71,12 +70,8 @@ void Application::run()
 		// Calculate fps
 		FPS = 1.f / DeltaTime;
 
-		// Decrement test time
-		testTime -= DeltaTime;
-
-		// Test if done
-		//if (testTime <= 0.f)
 		loops--;
+		//std::cout << loops << std::endl;
 		if (loops == 0)
 		{
 			//auto health = ecs->getEntitysComponent<c::Health>(5);

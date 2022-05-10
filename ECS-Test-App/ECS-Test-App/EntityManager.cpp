@@ -1,25 +1,6 @@
 #include "EntityManager.h"
 #include "ComponentsAndSystems.h"
 
-#if EM_IMPL == 2 || EM_IMPL == 3
-
-void EntityManager::process(ECS& ecs, float DeltaTime)
-{
-	for (auto it = timers.begin(); it != timers.end();)
-	{
-		*it -= DeltaTime;
-
-		// If timer is expired
-		if (*it <= 0.f)
-		{
-			spawnNewEntity(ecs);		// Spawn new entity 
-			it = timers.erase(it);		// Erase timer
-		}
-		else
-			it++;	// Continue loop
-	}
-}
-
 void EntityManager::spawnAdder(ECS& ecs, bool init)
 {
 	constexpr uint minAdd = 1;
@@ -36,6 +17,26 @@ void EntityManager::spawnAdder(ECS& ecs, bool init)
 	ecs.getEntitysComponent<c::Adder>(id)->addition = randRange<uint>(minAdd, maxAdd);
 }
 
+#if EM_IMPL == 2 || EM_IMPL == 3
+
+void EntityManager::process(ECS& ecs, float DeltaTime)
+{
+	for (auto it = counters.begin(); it != counters.end();)
+	{
+		*it -= 1;
+
+		// If timer is expired
+		if (*it <= 0.f)
+		{
+			spawnNewEntity(ecs);		// Spawn new entity 
+			it = counters.erase(it);		// Erase timer
+		}
+		else
+			it++;	// Continue loop
+	}
+}
+
+#if EM_IMPL == 3
 void EntityManager::spawnMultiplier(ECS& ecs, bool init)
 {
 	constexpr float minMul = 0.9;
@@ -67,13 +68,16 @@ void EntityManager::spawnSubtractor(ECS& ecs, bool init)
 	ecs.getEntitysComponent<c::Health>(id)->health = 0;
 	ecs.getEntitysComponent<c::Subtractor>(id)->subtraction = randRange<uint>(minSub, maxSub);
 }
+#endif
 
-void EntityManager::addTimer()
+void EntityManager::addCounter()
 {
-	constexpr float minTime = 2.f;
-	constexpr float maxTime = 5.f;
+	constexpr uint8_t minTime = 2.f;
+	constexpr uint8_t maxTime = 5.f;
 
-	timers.push_back(randRange(minTime, maxTime));
+	counters.push_back(randRange(minTime, maxTime));
+
+	//std::cout << "\t Added Counter \n";
 }
 
 #endif
@@ -88,7 +92,7 @@ void EntityManager::initSpawnEntities(ECS& ecs)
 
 #if EM_IMPL < 3
 
-	spawnAdders(50000);
+	spawnAdders(65000);
 
 #elif EM_IMPL == 3
 
@@ -103,7 +107,7 @@ void EntityManager::initSpawnEntities(ECS& ecs)
 			spawnSubtractor(ecs, true);
 	};
 
-	spawnAdders(30000);
+	spawnAdders(45000);
 	spawnMultipliers(5000);
 	spawnSubtractors(15000);
 
