@@ -116,6 +116,9 @@ void EntityManager::initSpawnEntities(ECS& ecs)
 
 void EntityManager::spawnNewEntity(ECS& ecs)
 {
+	//entityCounter++;
+	//std::cout << entityCounter << std::endl;
+
 #if EM_IMPL < 3
 
 	spawnAdder(ecs, false);

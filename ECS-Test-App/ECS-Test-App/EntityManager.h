@@ -48,5 +48,7 @@ protected:
 	std::vector<uint8_t> counters;	// A vector of counters to respawn a new entity
 
 #endif
+
+	long entityCounter = 0;
 };
 

@@ -47,7 +47,7 @@ Application::~Application()
 void Application::run()
 {
 	// Length of time to run test in seconds
-	unsigned int loops = 1000;
+	unsigned int loops = 500;
 
 	bool bRunning = true;
 	while (bRunning)
@@ -80,8 +80,8 @@ void Application::run()
 			// Record output
 			std::ofstream file;
 			file.open("Output.csv");
-			for (auto& f : deltaTimes)
-				file << f << std::endl;
+			for (int i = 0; i < deltaTimes.size(); i++)
+				file << i << ',' << deltaTimes[i] << std::endl;
 			file.close();
 
 			bRunning = false;
